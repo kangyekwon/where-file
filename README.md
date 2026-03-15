@@ -1,5 +1,7 @@
 # where-file
 
+[English](README.md) | [한국어](README.ko.md)
+
 > "Where my files at?" — See every open file on your Windows PC, instantly.
 
 No install. No dependencies. Just run it.

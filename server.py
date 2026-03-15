@@ -1,5 +1,5 @@
 """
-Open Files Viewer - Currently open file path viewer
+where-file - Currently open file path viewer
 Run: python server.py
 Browser opens automatically at http://localhost:8765
 """

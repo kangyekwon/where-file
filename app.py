@@ -1,5 +1,5 @@
 """
-Open Files Viewer - Lightweight Tray App
+where-file - Lightweight Tray App
 Zero external dependencies. Pure Python + Windows API.
 
 Features:
@@ -273,7 +273,7 @@ class TrayApp:
                 name = Path(path).name
                 self._show_balloon("Path Copied", name)
             else:
-                self._show_balloon("Open Files Viewer", "No file path found.")
+                self._show_balloon("where-file", "No file path found.")
         threading.Thread(target=_do, daemon=True).start()
 
     def _show_popup(self):
@@ -313,13 +313,13 @@ class TrayApp:
         self.nid.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP
         self.nid.uCallbackMessage = WM_TRAYICON
         self.nid.hIcon = icon
-        self.nid.szTip = "Open Files Viewer (Ctrl+Shift+F)"
+        self.nid.szTip = "where-file (Ctrl+Shift+F)"
         shell32.Shell_NotifyIconW(NIM_ADD, ctypes.byref(self.nid))
 
         # Register hotkey: Ctrl+Shift+F
         user32.RegisterHotKey(self.hwnd, HOTKEY_ID, MOD_CTRL_SHIFT, VK_F)
 
-        print("Open Files Viewer running.")
+        print("where-file running.")
         print("  Ctrl+Shift+F : Copy active file path")
         print("  Tray icon    : Click to see all files")
         print("  Tray right-click > Quit to exit")
