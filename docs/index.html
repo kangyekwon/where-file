@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>where-file — See every open file on your Windows PC</title>
+    <meta name="description" content="A tiny zero-dependency Windows utility that shows all currently open files across every app. No install needed.">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0e1a;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+
+        /* Hero */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px 20px;
+            background: radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.15) 0%, transparent 70%);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(59,130,246,0.1);
+            border: 1px solid rgba(59,130,246,0.3);
+            border-radius: 100px;
+            padding: 6px 16px;
+            font-size: 13px;
+            color: #60a5fa;
+            margin-bottom: 32px;
+        }
+
+        .badge .dot {
+            width: 6px;
+            height: 6px;
+            background: #22c55e;
+            border-radius: 50%;
+        }
+
+        h1 {
+            font-size: clamp(48px, 8vw, 80px);
+            font-weight: 800;
+            letter-spacing: -2px;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline {
+            font-size: clamp(18px, 3vw, 24px);
+            color: #94a3b8;
+            max-width: 600px;
+            line-height: 1.5;
+            margin-bottom: 40px;
+        }
+
+        .cta-group {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 4px 24px rgba(59,130,246,0.4);
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(59,130,246,0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.05);
+            color: #e2e8f0;
+            border: 1px solid #334155;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: #475569;
+        }
+
+        .btn-sm {
+            padding: 12px 24px;
+            font-size: 14px;
+            border-radius: 10px;
+        }
+
+        .download-hint {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 60px;
+        }
+
+        /* Hero Image */
+        .hero-image {
+            max-width: 900px;
+            width: 100%;
+            border-radius: 16px;
+            border: 1px solid #1e293b;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+        }
+
+        /* Features */
+        .features {
+            padding: 120px 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .section-sub {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 18px;
+            margin-bottom: 64px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .feature-card {
+            background: #111827;
+            border: 1px solid #1e293b;
+            border-radius: 16px;
+            padding: 32px;
+            transition: border-color 0.2s;
+        }
+
+        .feature-card:hover {
+            border-color: #3b82f6;
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .feature-card p {
+            color: #94a3b8;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .icon-blue { background: rgba(59,130,246,0.15); }
+        .icon-green { background: rgba(34,197,94,0.15); }
+        .icon-purple { background: rgba(139,92,246,0.15); }
+        .icon-orange { background: rgba(249,115,22,0.15); }
+        .icon-red { background: rgba(239,68,68,0.15); }
+        .icon-teal { background: rgba(20,184,166,0.15); }
+
+        /* Modes Section */
+        .modes {
+            padding: 80px 20px 120px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .mode-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 32px;
+            margin-top: 64px;
+        }
+
+        .mode-card {
+            background: #111827;
+            border: 1px solid #1e293b;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .mode-card img {
+            width: 100%;
+            border-bottom: 1px solid #1e293b;
+        }
+
+        .mode-card-body {
+            padding: 28px;
+        }
+
+        .mode-card-body h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .mode-card-body p {
+            color: #94a3b8;
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .mode-card-body code {
+            display: block;
+            background: #0a0e1a;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+            font-size: 14px;
+            color: #22c55e;
+        }
+
+        /* Quick Start */
+        .quickstart {
+            padding: 80px 20px 120px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            margin-top: 48px;
+        }
+
+        .step {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .step-num {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            border-radius: 50%;
+            background: rgba(59,130,246,0.15);
+            color: #3b82f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .step-content h4 {
+            font-size: 16px;
+            margin-bottom: 6px;
+        }
+
+        .step-content p {
+            color: #94a3b8;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .step-content code {
+            background: #111827;
+            border: 1px solid #1e293b;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-family: 'Cascadia Code', monospace;
+            font-size: 13px;
+            color: #22c55e;
+        }
+
+        /* File Types */
+        .filetypes {
+            padding: 80px 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .ext-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 40px;
+        }
+
+        .ext-tag {
+            background: #111827;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-family: 'Cascadia Code', monospace;
+            color: #94a3b8;
+            transition: all 0.2s;
+        }
+
+        .ext-tag:hover {
+            border-color: #3b82f6;
+            color: #e2e8f0;
+        }
+
+        .ext-tag.highlight {
+            border-color: #3b82f6;
+            color: #60a5fa;
+            background: rgba(59,130,246,0.1);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 60px 20px;
+            border-top: 1px solid #1e293b;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        footer a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 640px) {
+            .cta-group { flex-direction: column; align-items: center; }
+            .mode-cards { grid-template-columns: 1fr; }
+            .feature-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Hero -->
+<section class="hero">
+    <div class="badge">
+        <span class="dot"></span>
+        v1.0.0 — Zero Dependencies
+    </div>
+    <h1>where-file</h1>
+    <p class="tagline">
+        "Where my files at?" — See every open file on your Windows PC, instantly.
+    </p>
+    <div class="cta-group">
+        <a href="https://github.com/kangyekwon/where-file/releases/latest" class="btn btn-primary">
+            Download for Windows
+        </a>
+        <a href="https://github.com/kangyekwon/where-file" class="btn btn-secondary">
+            View on GitHub
+        </a>
+    </div>
+    <p class="download-hint">No install needed. No Python required. Just download and run.</p>
+    <img src="https://raw.githubusercontent.com/kangyekwon/where-file/main/image/image_1.png" alt="where-file dashboard" class="hero-image">
+</section>
+
+<!-- Features -->
+<section class="features">
+    <h2 class="section-title">Why where-file?</h2>
+    <p class="section-sub">Simple, fast, and just works.</p>
+    <div class="feature-grid">
+        <div class="feature-card">
+            <div class="feature-icon icon-blue">&#128269;</div>
+            <h3>See All Open Files</h3>
+            <p>PowerPoint, Word, Excel, VS Code, Notepad — every file across every app, in one place.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon icon-green">&#128203;</div>
+            <h3>One-Click Copy</h3>
+            <p>Copy file path or folder path instantly. No more digging through File Explorer.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon icon-purple">&#128230;</div>
+            <h3>Zero Dependencies</h3>
+            <p>Pure Python standard library. No pip install, no Node.js, no nonsense. Just download and run.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon icon-orange">&#9000;</div>
+            <h3>Ctrl+Shift+F</h3>
+            <p>Global hotkey instantly copies the active window's file path to clipboard. Works anywhere.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon icon-red">&#128196;</div>
+            <h3>70+ File Types</h3>
+            <p>Office, PDF, images, code, video, audio, archives, design files — all detected automatically.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon icon-teal">&#9731;</div>
+            <h3>Lightweight</h3>
+            <p>Under 7MB. Runs in the background with minimal memory. No bloat, no telemetry.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Two Modes -->
+<section class="modes">
+    <h2 class="section-title">Two Ways to Use</h2>
+    <p class="section-sub">Pick your style.</p>
+    <div class="mode-cards">
+        <div class="mode-card">
+            <img src="https://raw.githubusercontent.com/kangyekwon/where-file/main/image/image_1.png" alt="Web Dashboard">
+            <div class="mode-card-body">
+                <h3>Web Dashboard</h3>
+                <p>Beautiful dark-themed dashboard in your browser. Filter by file type, auto-refresh, copy paths with one click.</p>
+                <code>where-file-web.exe</code>
+            </div>
+        </div>
+        <div class="mode-card">
+            <img src="https://raw.githubusercontent.com/kangyekwon/where-file/main/image/image_2.png" alt="System Tray">
+            <div class="mode-card-body">
+                <h3>System Tray</h3>
+                <p>Sits quietly in your taskbar. Press Ctrl+Shift+F anywhere to instantly grab the file path. Left-click for full list.</p>
+                <code>where-file-tray.exe</code>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Start -->
+<section class="quickstart">
+    <h2 class="section-title">Getting Started</h2>
+    <p class="section-sub">Up and running in 30 seconds.</p>
+    <img src="https://raw.githubusercontent.com/kangyekwon/where-file/main/image/image_3.png" alt="Getting Started" style="width:100%; border-radius:16px; border:1px solid #1e293b; margin-top:32px; margin-bottom:32px;">
+    <div class="steps">
+        <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+                <h4>Download</h4>
+                <p>Grab <code>where-file-web.exe</code> or <code>where-file-tray.exe</code> from the <a href="https://github.com/kangyekwon/where-file/releases/latest" style="color:#3b82f6;">Releases page</a>.</p>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+                <h4>Run</h4>
+                <p>Double-click the exe. That's it. No installation, no setup.</p>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+                <h4>Use</h4>
+                <p>Your browser opens automatically showing all open files. Click <code>Copy Path</code> to grab any file path.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- File Types -->
+<section class="filetypes">
+    <h2 class="section-title">70+ File Types Supported</h2>
+    <p class="section-sub">If it's open, we'll find it.</p>
+    <div class="ext-cloud">
+        <span class="ext-tag highlight">.pptx</span>
+        <span class="ext-tag highlight">.docx</span>
+        <span class="ext-tag highlight">.xlsx</span>
+        <span class="ext-tag">.pdf</span>
+        <span class="ext-tag">.hwp</span>
+        <span class="ext-tag">.txt</span>
+        <span class="ext-tag">.md</span>
+        <span class="ext-tag">.py</span>
+        <span class="ext-tag">.js</span>
+        <span class="ext-tag">.ts</span>
+        <span class="ext-tag">.java</span>
+        <span class="ext-tag">.cpp</span>
+        <span class="ext-tag">.go</span>
+        <span class="ext-tag">.rs</span>
+        <span class="ext-tag">.png</span>
+        <span class="ext-tag">.jpg</span>
+        <span class="ext-tag">.svg</span>
+        <span class="ext-tag">.psd</span>
+        <span class="ext-tag">.mp4</span>
+        <span class="ext-tag">.mp3</span>
+        <span class="ext-tag">.zip</span>
+        <span class="ext-tag">.json</span>
+        <span class="ext-tag">.csv</span>
+        <span class="ext-tag">.html</span>
+        <span class="ext-tag">.css</span>
+        <span class="ext-tag">.sql</span>
+        <span class="ext-tag">.xml</span>
+        <span class="ext-tag">.yaml</span>
+        <span class="ext-tag">+40 more</span>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer>
+    <p>
+        Made with care by <a href="https://github.com/kangyekwon">kangyekwon</a> &middot;
+        <a href="https://github.com/kangyekwon/where-file">GitHub</a> &middot;
+        MIT License
+    </p>
+</footer>
+
+</body>
+</html>
