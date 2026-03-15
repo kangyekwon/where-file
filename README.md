@@ -9,6 +9,8 @@ No install. No dependencies. Just run it.
 ![Dependencies](https://img.shields.io/badge/Dependencies-Zero-brightgreen)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
+![where-file Web Dashboard](image/image_1.png)
+
 ## What is this?
 
 A tiny Windows utility that shows you **all currently open files** across every app — PowerPoint, Word, Excel, VS Code, Notepad, and more.
@@ -24,6 +26,8 @@ Ever had 20 windows open and couldn't find that one file? **where-file** solves 
 - **Two modes**: Web dashboard or System tray
 
 ## Quick Start
+
+![Getting Started](image/image_3.png)
 
 ```bash
 # Clone
@@ -50,6 +54,8 @@ python server.py
 - Copy path / Copy folder buttons
 
 ### 2. System Tray (`app.py`)
+
+![System Tray Mode](image/image_2.png)
 
 ```bash
 python app.py
@@ -105,6 +111,7 @@ where-file/
 ├── server.py           # Web dashboard server
 ├── app.py              # System tray app with hotkey
 ├── index.html          # Web UI
+├── image/              # Screenshots
 ├── install_menu.reg    # Explorer context menu (install)
 └── uninstall_menu.reg  # Explorer context menu (uninstall)
 ```
