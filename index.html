@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>where-file</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-bottom: 1px solid #334155;
+            padding: 20px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .status {
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .status .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            margin-right: 6px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .refresh-btn {
+            background: #334155;
+            border: 1px solid #475569;
+            color: #e2e8f0;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: #475569;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .summary {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .summary-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 16px 24px;
+            min-width: 140px;
+        }
+
+        .summary-card .label {
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .summary-card .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #f1f5f9;
+        }
+
+        .file-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .file-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.2s;
+        }
+
+        .file-card:hover {
+            border-color: #3b82f6;
+            background: #1e293b;
+            box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.3);
+        }
+
+        .file-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .icon-pptx, .icon-ppt { background: #dc2626; color: white; }
+        .icon-docx, .icon-doc { background: #2563eb; color: white; }
+        .icon-xlsx, .icon-xls, .icon-csv { background: #16a34a; color: white; }
+        .icon-pdf { background: #dc2626; color: white; }
+        .icon-txt, .icon-md, .icon-log { background: #64748b; color: white; }
+        .icon-png, .icon-jpg, .icon-jpeg, .icon-gif, .icon-svg, .icon-webp, .icon-bmp { background: #8b5cf6; color: white; }
+        .icon-psd, .icon-ai, .icon-sketch, .icon-fig, .icon-xd { background: #0ea5e9; color: white; }
+        .icon-mp4, .icon-avi, .icon-mkv, .icon-mov { background: #f59e0b; color: white; }
+        .icon-mp3, .icon-wav, .icon-flac { background: #ec4899; color: white; }
+        .icon-py, .icon-js, .icon-ts, .icon-java, .icon-cpp, .icon-cs, .icon-go, .icon-rs, .icon-rb, .icon-php { background: #14b8a6; color: white; }
+        .icon-html, .icon-css, .icon-json, .icon-xml, .icon-yaml, .icon-yml { background: #f97316; color: white; }
+        .icon-zip, .icon-rar, .icon-7z, .icon-tar, .icon-gz { background: #a855f7; color: white; }
+        .icon-hwp, .icon-hwpx { background: #3b82f6; color: white; }
+        .icon-default { background: #475569; color: white; }
+
+        .file-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #f1f5f9;
+            margin-bottom: 4px;
+        }
+
+        .file-path {
+            font-size: 13px;
+            color: #94a3b8;
+            word-break: break-all;
+            line-height: 1.4;
+        }
+
+        .file-app {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .action-btn {
+            background: #334155;
+            border: 1px solid #475569;
+            color: #e2e8f0;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .action-btn:hover {
+            background: #475569;
+        }
+
+        .action-btn.copied {
+            background: #16a34a;
+            border-color: #16a34a;
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #64748b;
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state h2 {
+            font-size: 20px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #334155;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #16a34a;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #94a3b8;
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+        }
+
+        .auto-refresh-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 40px;
+            height: 22px;
+            background: #334155;
+            border-radius: 11px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.on {
+            background: #3b82f6;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch.on::after {
+            transform: translateX(18px);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>where-file</h1>
+        <div class="header-right">
+            <div class="auto-refresh-toggle">
+                <span>Auto</span>
+                <div class="toggle-switch on" id="autoToggle" onclick="toggleAutoRefresh()"></div>
+            </div>
+            <div class="status">
+                <span class="dot"></span>
+                <span id="lastUpdate">Loading...</span>
+            </div>
+            <button class="refresh-btn" onclick="loadFiles()">Refresh</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="summary" id="summary"></div>
+        <div class="filter-bar" id="filterBar"></div>
+        <div id="fileList">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Scanning open files...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let allFiles = [];
+        let currentFilter = 'all';
+        let autoRefresh = true;
+        let refreshInterval = null;
+
+        const EXT_LABELS = {
+            '.pptx': 'PPT', '.ppt': 'PPT',
+            '.docx': 'DOC', '.doc': 'DOC',
+            '.xlsx': 'XLS', '.xls': 'XLS', '.csv': 'CSV',
+            '.pdf': 'PDF',
+            '.txt': 'TXT', '.md': 'MD', '.log': 'LOG', '.rtf': 'RTF',
+            '.png': 'PNG', '.jpg': 'JPG', '.jpeg': 'JPG', '.gif': 'GIF',
+            '.svg': 'SVG', '.webp': 'WEBP', '.bmp': 'BMP',
+            '.psd': 'PSD', '.ai': 'AI', '.sketch': 'SKT', '.fig': 'FIG', '.xd': 'XD',
+            '.mp4': 'MP4', '.avi': 'AVI', '.mkv': 'MKV', '.mov': 'MOV',
+            '.mp3': 'MP3', '.wav': 'WAV', '.flac': 'FLAC',
+            '.py': 'PY', '.js': 'JS', '.ts': 'TS', '.java': 'JAVA',
+            '.cpp': 'C++', '.cs': 'C#', '.go': 'GO', '.rs': 'RS', '.rb': 'RB', '.php': 'PHP',
+            '.html': 'HTML', '.css': 'CSS', '.json': 'JSON', '.xml': 'XML',
+            '.yaml': 'YML', '.yml': 'YML',
+            '.zip': 'ZIP', '.rar': 'RAR', '.7z': '7Z',
+            '.hwp': 'HWP', '.hwpx': 'HWP',
+        };
+
+        const CATEGORIES = {
+            'Office': ['.pptx','.ppt','.docx','.doc','.xlsx','.xls','.csv','.hwp','.hwpx'],
+            'PDF': ['.pdf'],
+            'Image': ['.png','.jpg','.jpeg','.gif','.svg','.webp','.bmp','.psd','.ai'],
+            'Video': ['.mp4','.avi','.mkv','.mov'],
+            'Audio': ['.mp3','.wav','.flac'],
+            'Code': ['.py','.js','.ts','.java','.cpp','.cs','.go','.rs','.rb','.php','.html','.css','.json','.xml','.yaml','.yml'],
+            'Text': ['.txt','.md','.log','.rtf'],
+        };
+
+        function getCategory(ext) {
+            for (const [cat, exts] of Object.entries(CATEGORIES)) {
+                if (exts.includes(ext)) return cat;
+            }
+            return 'Other';
+        }
+
+        function getIconClass(ext) {
+            const key = ext.replace('.', '');
+            return `icon-${key}`;
+        }
+
+        function getLabel(ext) {
+            return EXT_LABELS[ext] || ext.replace('.', '').toUpperCase();
+        }
+
+        async function loadFiles() {
+            try {
+                const res = await fetch('/api/files');
+                allFiles = await res.json();
+                renderSummary();
+                renderFilters();
+                renderFiles();
+                document.getElementById('lastUpdate').textContent =
+                    new Date().toLocaleTimeString('ko-KR');
+            } catch (err) {
+                document.getElementById('fileList').innerHTML =
+                    '<div class="empty-state"><h2>Connection Error</h2><p>Cannot connect to server.</p></div>';
+            }
+        }
+
+        function renderSummary() {
+            const el = document.getElementById('summary');
+            const cats = {};
+            allFiles.forEach(f => {
+                const cat = getCategory(f.ext);
+                cats[cat] = (cats[cat] || 0) + 1;
+            });
+
+            let html = `<div class="summary-card"><div class="label">Total</div><div class="value">${allFiles.length}</div></div>`;
+            for (const [cat, count] of Object.entries(cats).sort((a, b) => b[1] - a[1])) {
+                html += `<div class="summary-card"><div class="label">${cat}</div><div class="value">${count}</div></div>`;
+            }
+            el.innerHTML = html;
+        }
+
+        function renderFilters() {
+            const el = document.getElementById('filterBar');
+            const cats = new Set(['all']);
+            allFiles.forEach(f => cats.add(getCategory(f.ext)));
+
+            let html = '';
+            for (const cat of cats) {
+                const label = cat === 'all' ? 'All' : cat;
+                const active = currentFilter === cat ? 'active' : '';
+                html += `<button class="filter-btn ${active}" onclick="setFilter('${cat}')">${label}</button>`;
+            }
+            el.innerHTML = html;
+        }
+
+        function setFilter(cat) {
+            currentFilter = cat;
+            renderFilters();
+            renderFiles();
+        }
+
+        function renderFiles() {
+            const el = document.getElementById('fileList');
+            let files = allFiles;
+
+            if (currentFilter !== 'all') {
+                files = files.filter(f => getCategory(f.ext) === currentFilter);
+            }
+
+            if (files.length === 0) {
+                el.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">&#128194;</div>
+                        <h2>No open files detected</h2>
+                        <p>Open a file in any application and click Refresh.</p>
+                    </div>`;
+                return;
+            }
+
+            let html = '<div class="file-list">';
+            for (const f of files) {
+                const iconClass = getIconClass(f.ext) || 'icon-default';
+                const label = getLabel(f.ext);
+                const folder = f.path.substring(0, f.path.lastIndexOf('\\')) || f.path.substring(0, f.path.lastIndexOf('/'));
+
+                html += `
+                    <div class="file-card">
+                        <div class="file-icon ${iconClass}">${label}</div>
+                        <div class="file-info">
+                            <div class="file-name">${escapeHtml(f.name)}</div>
+                            <div class="file-path">${escapeHtml(f.path)}</div>
+                            <div class="file-app">${escapeHtml(f.app)}</div>
+                        </div>
+                        <div class="file-actions">
+                            <button class="action-btn" onclick="copyPath('${escapeJs(f.path)}', this)">Copy Path</button>
+                            <button class="action-btn" onclick="copyPath('${escapeJs(folder)}', this)">Copy Folder</button>
+                        </div>
+                    </div>`;
+            }
+            html += '</div>';
+            el.innerHTML = html;
+        }
+
+        function copyPath(path, btn) {
+            navigator.clipboard.writeText(path).then(() => {
+                btn.classList.add('copied');
+                btn.textContent = 'Copied!';
+                showToast('Copied: ' + path);
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.textContent = btn.textContent === 'Copied!' ? 'Copy Path' : 'Copy Folder';
+                }, 1500);
+            });
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        function toggleAutoRefresh() {
+            autoRefresh = !autoRefresh;
+            const el = document.getElementById('autoToggle');
+            el.classList.toggle('on', autoRefresh);
+            if (autoRefresh) {
+                startAutoRefresh();
+            } else {
+                stopAutoRefresh();
+            }
+        }
+
+        function startAutoRefresh() {
+            stopAutoRefresh();
+            refreshInterval = setInterval(loadFiles, 5000);
+        }
+
+        function stopAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                refreshInterval = null;
+            }
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function escapeJs(str) {
+            return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        }
+
+        // Initial load
+        loadFiles();
+        startAutoRefresh();
+    </script>
+</body>
+</html>

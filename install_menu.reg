@@ -1,0 +1,9 @@
+Windows Registry Editor Version 5.00
+
+; Right-click any file -> "Copy Full Path"
+[HKEY_CURRENT_USER\Software\Classes\*\shell\CopyFullPath]
+@="Copy Full Path"
+"Icon"="shell32.dll,134"
+
+[HKEY_CURRENT_USER\Software\Classes\*\shell\CopyFullPath\command]
+@="powershell.exe -NoProfile -WindowStyle Hidden -Command \"Set-Clipboard -Value '%1'\""
